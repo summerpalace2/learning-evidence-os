@@ -1,0 +1,182 @@
+{
+  "topics": [
+    {
+      "id": "topic-kmp-compilation",
+      "title": "KMP compilation model and project structure",
+      "profile": "android",
+      "state": {
+        "longTermMastery": "L2",
+        "coverageConfidence": "C2",
+        "latestRoundRating": "R3",
+        "lifecycle": "in_review",
+        "reviewItems": ["Explain a platform API boundary in a new source-set layout"],
+        "nextHandoff": "Retest commonMain visibility and Target-to-Compilation mapping"
+      },
+      "nodeIds": ["node-source-set-coverage", "node-target-compilation"],
+      "articleIds": ["article-kmp-compilation-v1"]
+    }
+  ],
+  "coverageFindings": [
+    {
+      "id": "finding-kmp-api-boundary",
+      "classification": "E",
+      "title": "Platform API boundary in commonMain",
+      "placement": "node-source-set-coverage",
+      "changesCoverage": "C2"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node-source-set-coverage",
+      "title": "Source Set coverage and platform API boundaries",
+      "kind": "checkpoint",
+      "parentId": "topic-kmp-compilation",
+      "articleLinks": [
+        {
+          "kind": "article-section",
+          "target": "article-kmp-compilation-v1",
+          "version": "v1",
+          "locator": "#source-set-coverage"
+        }
+      ],
+      "answerIds": ["answer-common-main-boundary"]
+    },
+    {
+      "id": "node-target-compilation",
+      "title": "Target to Compilation relationship",
+      "kind": "checkpoint",
+      "parentId": "topic-kmp-compilation",
+      "articleLinks": [
+        {
+          "kind": "article-section",
+          "target": "article-kmp-compilation-v1",
+          "version": "v1",
+          "locator": "#target-compilation"
+        }
+      ],
+      "answerIds": []
+    }
+  ],
+  "articles": [
+    {
+      "id": "article-kmp-compilation-v1",
+      "title": "KMP compilation model and project structure",
+      "version": "v1",
+      "profile": "android",
+      "scope": "Target, Compilation, Source Set, and platform API boundaries",
+      "sourceLinks": [
+        {
+          "kind": "public-doc",
+          "target": "https://kotlinlang.org/docs/multiplatform-discover-project.html",
+          "version": "current"
+        }
+      ],
+      "nodeLinks": [
+        {
+          "kind": "node",
+          "target": "node-source-set-coverage",
+          "version": "v1",
+          "locator": "#source-set-coverage"
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "question-common-main-boundary",
+      "originalQuestion": "Why does android.util.Log fail in commonMain?",
+      "normalizedQuestion": "Explain the platform API boundary of commonMain from Source Set coverage, Target, and Compilation.",
+      "profile": "android",
+      "kind": "mechanism-and-boundary",
+      "sourceLinks": [
+        {
+          "kind": "public-doc",
+          "target": "https://kotlinlang.org/docs/multiplatform-discover-project.html",
+          "version": "current"
+        }
+      ],
+      "maturity": "candidate"
+    }
+  ],
+  "answers": [
+    {
+      "id": "answer-common-main-boundary",
+      "questionId": "question-common-main-boundary",
+      "shortAnswer": "commonMain is compiled for applicable targets and cannot assume Android-only APIs.",
+      "completeAnswer": "commonMain is a shared Source Set whose code participates in the applicable target Compilations. Because it must remain valid for those targets, it cannot directly depend on Android-only APIs such as android.util.Log; platform-specific behavior belongs in the platform Source Set or behind an expect/actual boundary.",
+      "deepExpansion": "Explain how Target declarations produce Compilations and how Source Set visibility is resolved.",
+      "boundaries": ["Android-only APIs are not available to commonMain"],
+      "followUps": ["How does a target compilation include commonMain?", "When is expect/actual appropriate?"],
+      "validationState": "validated",
+      "sourceLinks": [
+        {
+          "kind": "public-doc",
+          "target": "https://kotlinlang.org/docs/multiplatform-discover-project.html",
+          "version": "current"
+        }
+      ]
+    }
+  ],
+  "sessions": [
+    {
+      "id": "session-kmp-round-1",
+      "topicId": "topic-kmp-compilation",
+      "mode": "mock_interview",
+      "actualScope": "Source Set coverage and platform API boundaries",
+      "incompleteScope": "Transfer to a new project structure",
+      "nextHandoff": "Retest Target-to-Compilation mapping",
+      "evidenceIds": ["evidence-common-main-boundary"]
+    }
+  ],
+  "acceptanceRounds": [
+    {
+      "id": "round-kmp-1",
+      "topicId": "topic-kmp-compilation",
+      "roundNumber": 1,
+      "evidenceIds": ["evidence-common-main-boundary"],
+      "retestItems": ["Target-to-Compilation mapping"],
+      "conclusion": "Source Set boundary explained; compilation relationship remains for retest"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence-common-main-boundary",
+      "questionId": "question-common-main-boundary",
+      "rawAnswer": "commonMain is shared, so it cannot use Android-specific Log directly; the platform implementation should be separated.",
+      "promptLevel": "independent",
+      "roundRating": "R3",
+      "mistakes": ["Did not yet explain the Target-to-Compilation relationship"],
+      "followUpResult": "Explained the Source Set boundary after a light prompt",
+      "answerId": "answer-common-main-boundary",
+      "links": [
+        {
+          "kind": "node",
+          "target": "node-source-set-coverage",
+          "version": "v1",
+          "locator": "#source-set-coverage"
+        },
+        {
+          "kind": "session",
+          "target": "session-kmp-round-1"
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "controlView": "Learning Control Center",
+    "currentTopicId": "topic-kmp-compilation",
+    "nextAction": "Retest Target-to-Compilation mapping"
+  },
+  "writebackOrder": [
+    "freeze_facts",
+    "canonical_answer",
+    "session",
+    "evidence",
+    "nodes_and_article",
+    "topic_state",
+    "control_center",
+    "question_bank_candidate",
+    "bidirectional_navigation",
+    "final_sync"
+  ]
+}

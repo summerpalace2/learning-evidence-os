@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Learning Evidence OS Object Model",
+  "description": "Portable envelope for topics, knowledge assets, learner state, evidence, and presentation views.",
+  "type": "object",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "link": {
+      "type": "object",
+      "required": ["kind", "target"],
+      "properties": {
+        "kind": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 },
+        "version": { "type": "string" },
+        "locator": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "topicState": {
+      "type": "object",
+      "required": ["longTermMastery", "coverageConfidence", "lifecycle"],
+      "properties": {
+        "longTermMastery": { "type": "string", "pattern": "^L[0-5]$" },
+        "coverageConfidence": { "type": "string", "pattern": "^C[0-4]$" },
+        "latestRoundRating": { "type": "string", "pattern": "^R[0-5]$" },
+        "lifecycle": { "enum": ["not_started", "learning", "completed", "partial", "in_review"] },
+        "reviewItems": { "type": "array", "items": { "type": "string" } },
+        "nextHandoff": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "question": {
+      "type": "object",
+      "required": ["id", "originalQuestion", "normalizedQuestion"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "originalQuestion": { "type": "string", "minLength": 1 },
+        "normalizedQuestion": { "type": "string", "minLength": 1 },
+        "profile": { "type": "string" },
+        "kind": { "type": "string" },
+        "sourceLinks": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+        "maturity": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "answer": {
+      "type": "object",
+      "required": ["id", "questionId", "shortAnswer", "completeAnswer"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "questionId": { "$ref": "#/$defs/id" },
+        "shortAnswer": { "type": "string", "minLength": 1 },
+        "completeAnswer": { "type": "string", "minLength": 1 },
+        "deepExpansion": { "type": "string" },
+        "boundaries": { "type": "array", "items": { "type": "string" } },
+        "followUps": { "type": "array", "items": { "type": "string" } },
+        "validationState": { "enum": ["pending", "partial", "validated", "learner_ready"] },
+        "sourceLinks": { "type": "array", "items": { "$ref": "#/$defs/link" } }
+      },
+      "additionalProperties": true
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["topic", "checkpoint", "boundary", "relationship", "source_conflict"] },
+        "parentId": { "$ref": "#/$defs/id" },
+        "articleLinks": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+        "answerIds": { "type": "array", "items": { "$ref": "#/$defs/id" } }
+      },
+      "additionalProperties": true
+    },
+    "article": {
+      "type": "object",
+      "required": ["id", "title", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "profile": { "type": "string" },
+        "scope": { "type": "string" },
+        "sourceLinks": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+        "nodeLinks": { "type": "array", "items": { "$ref": "#/$defs/link" } }
+      },
+      "additionalProperties": true
+    },
+    "session": {
+      "type": "object",
+      "required": ["id", "topicId", "mode", "actualScope"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "topicId": { "$ref": "#/$defs/id" },
+        "mode": { "enum": ["teach", "review", "retest", "mock_interview", "coverage_audit"] },
+        "actualScope": { "type": "string", "minLength": 1 },
+        "incompleteScope": { "type": "string" },
+        "nextHandoff": { "type": "string" },
+        "evidenceIds": { "type": "array", "items": { "$ref": "#/$defs/id" } }
+      },
+      "additionalProperties": true
+    },
+    "evidenceItem": {
+      "type": "object",
+      "required": ["id", "questionId", "rawAnswer", "promptLevel", "roundRating"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "questionId": { "$ref": "#/$defs/id" },
+        "rawAnswer": { "type": "string" },
+        "promptLevel": {
+          "enum": ["independent", "light_prompt", "strong_prompt", "answer_repetition", "recognition"]
+        },
+        "roundRating": { "type": "string", "pattern": "^R[0-5]$" },
+        "mistakes": { "type": "array", "items": { "type": "string" } },
+        "followUpResult": { "type": "string" },
+        "answerId": { "$ref": "#/$defs/id" },
+        "links": { "type": "array", "items": { "$ref": "#/$defs/link" } }
+      },
+      "additionalProperties": true
+    },
+    "coverageFinding": {
+      "type": "object",
+      "required": ["id", "classification", "title"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "classification": { "enum": ["A", "B", "C", "D", "E", "F", "G"] },
+        "title": { "type": "string", "minLength": 1 },
+        "placement": { "type": "string" },
+        "changesCoverage": { "type": "string", "pattern": "^C[0-4]$" }
+      },
+      "additionalProperties": true
+    },
+    "acceptanceRound": {
+      "type": "object",
+      "required": ["id", "topicId", "roundNumber", "evidenceIds"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "topicId": { "$ref": "#/$defs/id" },
+        "roundNumber": { "type": "integer", "minimum": 1 },
+        "evidenceIds": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "retestItems": { "type": "array", "items": { "type": "string" } },
+        "conclusion": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "topic": {
+      "type": "object",
+      "required": ["id", "title", "profile"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1 },
+        "profile": { "type": "string", "minLength": 1 },
+        "state": { "$ref": "#/$defs/topicState" },
+        "nodeIds": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "articleIds": { "type": "array", "items": { "$ref": "#/$defs/id" } }
+      },
+      "additionalProperties": true
+    }
+  },
+  "properties": {
+    "topics": { "type": "array", "items": { "$ref": "#/$defs/topic" } },
+    "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+    "articles": { "type": "array", "items": { "$ref": "#/$defs/article" } },
+    "questions": { "type": "array", "items": { "$ref": "#/$defs/question" } },
+    "answers": { "type": "array", "items": { "$ref": "#/$defs/answer" } },
+    "sessions": { "type": "array", "items": { "$ref": "#/$defs/session" } },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidenceItem" } },
+    "coverageFindings": { "type": "array", "items": { "$ref": "#/$defs/coverageFinding" } },
+    "acceptanceRounds": { "type": "array", "items": { "$ref": "#/$defs/acceptanceRound" } },
+    "writebackOrder": { "type": "array", "items": { "type": "string" } },
+    "knowledge": {
+      "type": "object",
+      "properties": {
+        "topicId": { "$ref": "#/$defs/id" },
+        "contentState": { "enum": ["index_only", "skeleton", "learning_note", "canonical_answer"] },
+        "sources": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+        "article": { "$ref": "#/$defs/link" }
+      },
+      "additionalProperties": true
+    },
+    "state": { "$ref": "#/$defs/topicState" },
+    "presentation": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": true
+}
