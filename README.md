@@ -227,11 +227,11 @@ Loop A 的输出主要改变 C、节点候选和内容放置，不证明用户�
 
 | Adapter | 推荐保存 | 失败时的要求 |
 |---|---|---|
-| Local | Markdown 文章、JSON/SQLite 状态、本地来源索引 | 记录临时状态，使用稳定 ID 和相对链接 |
-| Notion | Topic State、Node、Session、Evidence、验收板、控制视图 | 对象级报告失败，不更新完成状态 |
-| Google Drive | 原始资料、长文、源码快照、版本化来源 | 只作为来源，不推断掌握等级 |
-| Google Sheets | 去个人化、可复用、可去重的问题资产 | 不保存个人表现和真实面试记录 |
-| 未来 Adapter | Obsidian、GitHub Issues、飞书等 | 遵守同一 Adapter Contract |
+| Local JSON | 配置、Topic、Article、Answer、Session、Evidence、State、Presentation | 当前已实现并有端到端测试 |
+| Notion | Topic State、Node、Session、Evidence、验收板、控制视图 | 当前仅有契约，未实现连接器 |
+| Google Drive | 原始资料、长文、源码快照、版本化来源 | 当前仅有契约，未实现连接器 |
+| Google Sheets | 去个人化、可复用、可去重的问题资产 | 当前仅有契约，未实现连接器 |
+| 未来 Adapter | Obsidian、GitHub Issues、飞书等 | 规划中，必须遵守同一 Adapter Contract |
 
 连接器必须声明读写对象、权限、稳定身份、幂等策略、冲突策略、失败输出、降级方式和是否属于外部变更。详见 [Adapter Contract](skills/learning-evidence-os/references/adapter-contract.md)。
 
@@ -239,21 +239,21 @@ Loop A 的输出主要改变 C、节点候选和内容放置，不证明用户�
 
 ### 方式一：Local-first
 
-适合先验证方法，不依赖第三方服务：
+这是当前唯一完整实现的运行方式，不依赖第三方服务。第一次运行先做 Bootstrap 配置：
 
-1. 复制 [templates](templates/) 中的 Article、Answer、Session、Acceptance Board 和 Topic Closeout 模板；
-2. 使用 [Local Adapter](adapters/local/README.md) 的目录约定保存 Markdown/JSON/SQLite；
-3. 为一个 Topic 创建 Learning Unit；
-4. 用一次一题的对话产生 Evidence；
-5. 按写回顺序保存并执行 Final Sync。
+```powershell
+python -m runtime.local.cli init
+python -m runtime.local.cli status
+python scripts/smoke_test.py
+```
 
-### 方式二：Notion + Google
+`init` 会询问 Profile、学习模式、已有资料和连接器；如果外部连接器没有经过实际能力检查，就自动使用本地 JSON。配置保存在 `.learning-evidence/config.json`，个人运行数据不会进入公开仓库。
 
-适合已有知识库的人：先按 Adapter Contract 做字段映射，再逐个授权读取和写入。Notion、Drive、Sheets 只是实现选择，不改变 Core 的对象边界。
+Local Runtime 当前已经能完成：创建 Topic、保存 Article、先保存 Canonical Answer、记录 Session/Evidence、更新 L/R/C、生成 handoff 和执行 Final Sync。详细说明见 [Local Adapter](adapters/local/README.md) 和 [Runtime Bootstrap](skills/learning-evidence-os/references/runtime-bootstrap.md)。
 
-### 方式三：安装 Agent Skill
+### 方式二：Standalone Agent Skill
 
-把 `skills/learning-evidence-os/` 复制到你的 Agent Skills 目录，然后启用 `learning-evidence-os`。Skill 不携带任何个人状态，也不会自动连接外部服务。
+把 `skills/learning-evidence-os/` 复制到你的 Agent Skills 目录，然后启用 `learning-evidence-os`。Skill 不携带任何个人状态，也不会自动连接外部服务。单独安装 Skill 时，如果没有仓库根目录和 Local Runtime，它只能执行临时对话，必须明确报告未持久化。
 
 ```text
 你的 Skills 目录/
@@ -263,11 +263,15 @@ Loop A 的输出主要改变 C、节点候选和内容放置，不证明用户�
     └── references/
 ```
 
-Skill 会在正式学习前恢复最小状态，在实时验收中保留原始证据，并在外部连接器不可用时明确报告“未持久化”的对象。
+Skill 会先完成 Bootstrap 和能力检查，再恢复最小状态；在实时验收中保留原始证据，并在外部连接器不可用时明确报告“未持久化”的对象。
+
+### 方式三：外部 Adapter
+
+Notion、Google Drive 和 Google Sheets 当前属于设计契约，不是已经交付的运行能力。只有对应 Adapter 真正实现并通过读写测试后，才可以接入正式状态；在此之前请使用 Local JSON。
 
 ## 验证用例
 
-每个领域 Profile 都应提供最小行为验证，而不是只提供一棵知识树。[Android KMP 验证用例](profiles/android/validation-cases.md)覆盖：
+每个领域 Profile 都应提供最小行为验证，而不是只提供一棵知识树。[Android Profile 验证用例](profiles/android/validation-cases.md)覆盖：
 
 1. Double Loop：地图缺口和用户掌握分别改变 C 与 L/R；
 2. 标准答案保存：Answer 在 Evidence 评价前存在；
@@ -276,13 +280,13 @@ Skill 会在正式学习前恢复最小状态，在实时验收中保留原始�
 5. Final Sync：控制视图和 handoff 能留下唯一下一步；
 6. 失败降级：连接器写入失败时保留临时记录，绝不声称成功。
 
-公开示例还提供了不依赖第三方包的快速检查：
+公开仓库提供了不依赖第三方包的端到端快速检查：
 
 ```powershell
-python scripts/validate_fixture.py
+python scripts/smoke_test.py
 ```
 
-它检查对象引用、L/R/C 格式、A-G 分类、标准答案先于 Evidence、验收轮次累计、双向导航和 Final Sync 下一步。
+它会在临时目录中完成 Bootstrap、Topic、Article、Canonical Answer、Session、Evidence、Topic State、控制视图和 handoff，并验证标准答案先于 Evidence、L/R/C 分离、失败 Adapter 不冒充成功以及 Final Sync 可重新读取。
 
 ## 公开包与私有归档
 
@@ -298,11 +302,11 @@ python scripts/validate_fixture.py
 learning-evidence-os/
 ├── README.md
 ├── skills/learning-evidence-os/ # 可安装的通用 Agent Skill
-├── profiles/android/            # Android/Kotlin/JVM 领域实现与验证用例
-├── adapters/                    # local / notion / google-drive / google-sheets
+├── profiles/android/            # Android/Java/Kotlin/JVM 领域实现与验证用例
+├── adapters/                    # local 已实现；其他为契约
+├── runtime/local/               # 可执行的 Bootstrap、Local Adapter 和 Core 工作流
 ├── templates/                   # article / answer / session / board / closeout
-├── schemas/                     # 领域无关对象模型
-├── examples/android-kmp/        # 脱敏的最小领域示例
+├── schemas/                     # 对象模型与运行配置 Schema
 ├── docs/integrations/           # 连接器职责与安全边界
 ├── docs/archive/                # 私有归档说明，不放原始个人文档
 └── assets/diagrams/             # 从方法论提炼的公开图示
@@ -312,9 +316,8 @@ learning-evidence-os/
 
 ## 当前边界与后续路线
 
-当前交付的是协议、Skill、Profile、模板、Schema、Adapter 契约和验证用例，不是托管 SaaS，也不是已经替用户连接外部服务的自动化平台。后续可以在不改变 Core 不变量的前提下增加：
+当前已经交付并验证的是协议、可安装 Skill、Profile、模板、Schema、可运行的 Local Runtime、Local Adapter、Bootstrap 和 Smoke Test。当前仍未交付的是外部 SaaS 连接器；本项目不是托管 SaaS，也不是已经替用户连接外部服务的自动化平台。后续可以在不改变 Core 不变量的前提下增加：
 
-- 可测试的 Local CLI 和 JSON/SQLite 实现；
 - Notion、Google、Obsidian、GitHub Issues、飞书等 Adapter；
 - Profile 生成器与 Schema 校验器；
 - 脱敏迁移工具、行为回归测试和跨库导航审计；

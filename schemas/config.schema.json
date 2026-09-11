@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://learning-evidence-os.dev/schemas/config.schema.json",
+  "title": "Learning Evidence OS Runtime Configuration",
+  "type": "object",
+  "required": ["configVersion", "profile", "mode", "storage", "sources", "requestedAdapters", "capabilities", "privacy"],
+  "properties": {
+    "configVersion": { "type": "integer", "const": 1 },
+    "profile": { "type": "string", "minLength": 1 },
+    "mode": { "type": "string", "enum": ["study", "interview", "exam", "practice"] },
+    "storage": {
+      "type": "object",
+      "required": ["kind", "root"],
+      "properties": {
+        "kind": { "type": "string", "const": "local-json" },
+        "root": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "sources": { "type": "array", "items": { "type": "string" } },
+    "requestedAdapters": {
+      "type": "array",
+      "items": { "enum": ["local", "notion", "google-drive", "google-sheets", "obsidian", "github-issues", "feishu"] }
+    },
+    "capabilities": { "type": "object" },
+    "privacy": {
+      "type": "object",
+      "required": ["publicRepo", "allowExternalWrite"],
+      "properties": {
+        "publicRepo": { "type": "boolean" },
+        "allowExternalWrite": { "type": "boolean" },
+        "personalDataRoot": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "configuredAt": { "type": "string" }
+  },
+  "additionalProperties": false
+}

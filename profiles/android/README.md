@@ -7,7 +7,7 @@ Android Profile 是 Learning Evidence OS 的首个领域实现。它把通用 Co
 | 层级 | Android Profile 中的含义 |
 |---|---|
 | Domain | Kotlin、Java、Android Framework、并发、网络、性能等长期方向 |
-| Topic | 例如 KMP 编译模型与工程结构、协程调度、Binder 调用链 |
+| Topic | 例如 Handler/Looper 消息分发、协程调度、Binder 调用链 |
 | Checkpoint | 例如 Source Set 可见性、Compilation、Handler 消息分发、CHM 桶处理 |
 
 一个 Topic 必须能形成完整文章并支持多轮验收。Checkpoint 只有在可以独立追问、迁移或复测时才单独建立。
@@ -64,7 +64,7 @@ expect fun platformName(): String
 ## 当前 V5.0 参考
 
 - [通用 Core 协议](../../skills/learning-evidence-os/references/core-protocol.md)
-- [Android KMP 验证用例](validation-cases.md)
+- [Android Profile 验证用例](validation-cases.md)
 - [私有 Word 归档说明](../../docs/archive/README.md)
 
 原始 V5.0 Word 文档只作为方法论来源保存在仓库外。公开包不包含个人状态、真实面试记录、Notion/Drive/Sheets 链接或页面 ID。

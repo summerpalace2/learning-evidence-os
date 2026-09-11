@@ -21,4 +21,4 @@ A Profile turns the generic Learning Evidence OS into a useful domain implementa
 - Require a specific vendor connector when a local fallback is possible.
 - Treat one learner's past mistake as universal evidence.
 
-See the [Android Profile](../../../profiles/android/README.md) for the first implementation.
+The repository's first concrete implementation is the optional Android Profile at `profiles/android/README.md`. A standalone Skill installation may not include that repository path; if it is absent, do not pretend that Android-specific technical truth has been loaded.

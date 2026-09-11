@@ -7,11 +7,13 @@ node_modules/
 dist/
 build/
 coverage/
+__pycache__/
 *.log
 *.sqlite
 *.db
 private/
 local-state/
+.learning-evidence/
 notion-export/
 google-credentials.json
 token.json

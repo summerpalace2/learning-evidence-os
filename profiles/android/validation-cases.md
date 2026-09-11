@@ -1,70 +1,70 @@
-# Android Profile Validation Cases
+# Android Profile 验证用例
 
-These cases are intentionally small and de-personalized. They verify the Core behavior with the Kotlin Multiplatform compilation model and do not publish any learner history.
+这些用例使用 Android 的 Handler/Looper 消息分发与生命周期边界作为领域场景，验证 Learning Evidence OS 的 Core 行为；它们不是 Android 工程测试，也不包含任何个人学习状态。
 
-Use the fixture in [examples/android-kmp/validation-fixture.json](../../examples/android-kmp/validation-fixture.json) as the expected object shape. A real Adapter may store the same objects as Markdown files, JSON/SQLite rows, Notion pages, or another backend.
+真正可执行的最小闭环见仓库根目录的 `scripts/smoke_test.py`。下面的场景说明 Profile 应如何约束教学事实和验收证据。
 
-## Case 1: Double Loop keeps C, L, and R separate
+## Case 1：Double Loop 保持 C、L、R 分离
 
-**Setup:** A Coverage Discovery pass finds that the current KMP map does not explain the relationship between Target, Compilation, Source Set, and backend constraints. The learner then answers the `commonMain` API-boundary question.
+**设置：** Coverage Discovery 发现现有地图没有覆盖 Looper、MessageQueue、Handler 关联关系和生命周期清理边界；随后用户回答消息分发问题。
 
-**Expected result:**
+**预期：**
 
-- the discovery result is classified as `A` or `E` and changes coverage state C;
-- the learner answer creates Evidence with an independent `R` value;
-- one answer does not silently raise long-term mastery L;
-- a discovered map gap can trigger the next unit, but it does not become proof of mastery.
+- 地图缺口被分类为 `A` 或 `E`，只影响覆盖置信度 `C`；
+- 用户回答产生独立 Evidence 和 `R`；
+- 一次回答不能直接提升长期掌握 `L`；
+- 地图缺口可以产生下一学习单元，但不能作为掌握证据。
 
-## Case 2: Canonical Answer is saved before evaluation
+## Case 2：标准答案先于评价保存
 
-**Setup:** The system creates a normalized question about why `android.util.Log` is not available in `commonMain`, then produces a short and complete canonical answer.
+**设置：** 系统先创建“消息如何从入队走到 Handler 处理”的规范问题和标准答案，再开始验收用户回答。
 
-**Expected result:**
+**预期：**
 
-- the Answer exists before the Evidence record is closed;
-- the Answer contains the causal chain: Source Set coverage → Target → Compilation → platform API boundary;
-- the learner's raw answer remains separate, even when it is incomplete or incorrect.
+- Evidence 关闭前，独立 Answer 已存在；
+- Answer 覆盖 Looper、MessageQueue、Handler、线程关联和生命周期边界的因果链；
+- 用户原话保持独立，不被标准答案覆盖。
 
-## Case 3: Acceptance Board accumulates rounds
+## Case 3：多轮验收累计保存
 
-**Setup:** Round 1 tests Source Set visibility. Round 2 tests the Target/Compilation relationship. Round 3 tests transfer to a new project structure.
+**设置：** 第一轮测试消息入队和取出，第二轮测试线程退出，第三轮测试延迟消息与对象生命周期。
 
-**Expected result:**
+**预期：**
 
-- all rounds remain linked to one Topic;
-- each round keeps its own questions, raw-answer summaries, prompt levels, R values, corrections, and retest items;
-- the latest round does not overwrite earlier evidence;
-- Topic Closeout remains open until the required checkpoints and Final Sync pass.
+- 三轮都链接到同一个 Topic；
+- 每一轮保留自己的问题、原话、提示程度、R、错误和复测项；
+- 新一轮不能覆盖旧 Evidence；
+- 未完成的边界使 Topic 保持 `in_review`。
 
-## Case 4: Navigation is bidirectional and versioned
+## Case 4：文章、节点和证据双向导航
 
-**Setup:** The Topic points to an Article section explaining Source Set coverage. The Article section points back to the Node, Answer, and Evidence.
+**设置：** Topic 指向解释消息分发机制的 Article 段落，Article 段落反向指向 Node、Answer 和 Evidence。
 
-**Expected result:**
+**预期：**
 
-- the link stores an article version and precise locator;
-- Node → Article and Article → Node both resolve to the intended section;
-- if the article moves, both directions are repaired in the same writeback;
-- stale links are reported as an integrity failure, not silently ignored.
+- 链接包含文章版本和稳定定位；
+- Node → Article 与 Article → Node 都能解析到目标位置；
+- 文章移动时，两端链接必须一起修复；
+- 失效链接必须被报告为完整性错误。
 
-## Case 5: Final Sync leaves one executable next step
+## Case 5：Final Sync 留下唯一下一步
 
-**Setup:** The session finishes with a correct explanation of the compilation relationship but an unresolved platform-boundary edge case.
+**设置：** 用户能解释消息分发主体流程，但没有解释延迟消息导致的生命周期边界。
 
-**Expected result:**
+**预期：**
 
-- Topic State retains the unresolved boundary;
-- the control view shows the current L/R/C summary without inflating L;
-- handoff contains one concrete retest or next Learning Unit;
-- the session is `partial` or `in_review` when required persistence is incomplete.
+- Topic State 保留未解决边界；
+- 控制视图展示真实的 L/R/C，不夸大 L；
+- handoff 只留下一个可执行的复测动作；
+- 主题状态为 `partial` 或 `in_review`，而不是虚假的完成。
 
-## Case 6: Adapter failure never becomes fake success
+## Case 6：Adapter 失败不能变成假成功
 
-**Setup:** The external Adapter fails while updating Topic State after Evidence has been captured locally.
+**设置：** 外部 Adapter 在更新 Topic State 时失败，但本地 Evidence 已经保存。
 
-**Expected result:**
+**预期：**
 
-- the local temporary record preserves the facts, Answer, Session, and Evidence;
-- the failed object and missing write are reported explicitly;
-- no `completed` status or successful Final Sync is claimed;
-- a later authorized retry can replay the idempotent write without duplicating Evidence.
+- 本地临时记录保留事实、Answer、Session 和 Evidence；
+- 明确报告失败对象和未完成写回；
+- 不声称 `completed` 或 Final Sync 成功；
+- 后续授权重试可以按稳定 ID 幂等执行。

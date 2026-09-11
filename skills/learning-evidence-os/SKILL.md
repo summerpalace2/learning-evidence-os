@@ -20,6 +20,18 @@ Operate a learning system in which technical knowledge, learner state, answer as
 9. Use the domain Profile to determine technical truth, terminology, source policy, and assessment detail.
 10. Do not convert a learner-specific habit, private schema, or past failure into a universal rule.
 
+## First-run Bootstrap
+
+Do not assume that the user has Notion, Google, a pre-existing Profile, or a writable external store. On the first persistent learning request, run a small setup conversation before planning:
+
+1. Ask for the learning domain/Profile, preferred mode (`study`, `interview`, `exam`, or `practice`), source locations, and available storage/connectors.
+2. Detect which requested capabilities are actually available in the current environment. Never treat an Adapter README, a user claim, or a remembered connection as a successful capability check.
+3. Default to the implemented Local JSON Adapter when no verified external Adapter is available.
+4. Save the setup result outside the public repository. The local reference implementation is `python -m runtime.local.cli init`; it writes `.learning-evidence/config.json`.
+5. Show the user a capability summary. Mark unavailable persistence as `planned_not_implemented`, `temporary`, or `unpersisted`; do not claim writeback or Final Sync success.
+
+If the skill is installed as a standalone folder and the repository runtime is not present, it can still guide a temporary conversation, but it must explicitly say that no persistent writeback was performed. Repository-relative Profiles and Schemas are optional resources, not hidden runtime dependencies.
+
 ## Route the request
 
 Read [Core Protocol](references/core-protocol.md) for every in-system task. Then load only the relevant additional reference. Use the active Profile for domain truth and the active Adapter for persistence; neither may override the Core invariants.
@@ -38,14 +50,15 @@ Read [Core Protocol](references/core-protocol.md) for every in-system task. Then
 ## Runtime sequence
 
 1. Identify the domain Profile and whether the request is a one-off or a persistent learning task.
-2. Read the current protocol and the minimum state, handoff, topic, article location, and recent evidence needed for the decision.
-3. If state is unavailable, clearly mark the decision as temporary and do not manufacture long-term status.
-4. Run a scoped Coverage Discovery pass when a new source, new question, contradiction, or obvious gap affects selection.
-5. Build one Learning Unit with an explicit boundary, sources, verification method, writeback targets, and next handoff.
-6. Teach using the complete causal chain required by the Profile. Preserve the standard answer as a separate asset before evaluating the learner.
-7. Verify live. Ask one question at a time unless a worksheet was requested; adapt depth to the learner answer; capture independence, prompts, mistakes, and follow-up result.
-8. Keep L, R, C, content state, answer state, and evidence strength separate when summarizing the result.
-9. Write back in the prescribed order. Perform Final Sync before formally closing a unit or topic.
+2. If this is the first persistent task, complete Bootstrap and capability checks before making a plan.
+3. Read the current protocol and the minimum state, handoff, topic, article location, and recent evidence needed for the decision.
+4. If state or persistence is unavailable, clearly mark the decision as temporary and do not manufacture long-term status.
+5. Run a scoped Coverage Discovery pass when a new source, new question, contradiction, or obvious gap affects selection.
+6. Build one Learning Unit with an explicit boundary, sources, verification method, writeback targets, and next handoff.
+7. Teach using the complete causal chain required by the Profile. Preserve the standard answer as a separate asset before evaluating the learner.
+8. Verify live. Ask one question at a time unless a worksheet was requested; adapt depth to the learner answer; capture independence, prompts, mistakes, and follow-up result.
+9. Keep L, R, C, content state, answer state, and evidence strength separate when summarizing the result.
+10. Write back in the prescribed order. Perform Final Sync before formally closing a unit or topic.
 
 ## External mutation boundary
 
@@ -71,5 +84,6 @@ If any item is missing, report the work as partial or in review and leave the ne
 - [Profile Contract](references/profile-contract.md): how to add Android, language, algorithms, or other domain implementations.
 - [Adapter Contract](references/adapter-contract.md): storage boundaries and safe failure behavior.
 - [Quality Gates](references/quality-gates.md): protocol review before formal closure.
-- [Android Profile](../../profiles/android/README.md): concrete V5.0-derived reference implementation.
-- [Object Model](../../schemas/object-model.json): portable object and relationship vocabulary.
+- Android Profile（仓库内可选资源：`profiles/android/README.md`）：具体领域实现。
+- Object Model（仓库内可选资源：`schemas/object-model.json`）：对象和关系词汇。
+- [Runtime Bootstrap](references/runtime-bootstrap.md)：首次配置、能力检查和本地运行规则。
